@@ -10,7 +10,7 @@ import com.logger.subscriber.Subscriber;
 import java.util.List;
 import java.util.Map;
 
-public class LoggerManager implements Manager {
+public class LoggerManager{
 
     private LoggerConfiger loggerConfiger;
     private LoggerMessagePublisher publisher;

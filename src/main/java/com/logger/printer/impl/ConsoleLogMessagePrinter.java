@@ -8,7 +8,7 @@ public class ConsoleLogMessagePrinter implements LogMessagePrinter {
 
     @Override
     public void printLogMessage(LoggerMessage message) {
-
+        // business logic
     }
 
     @Override

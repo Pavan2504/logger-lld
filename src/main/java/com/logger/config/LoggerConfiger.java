@@ -1,6 +1,8 @@
 package com.logger.config;
 
 import com.logger.enums.LoggerLevel;
+import com.logger.enums.PrinterType;
+import com.logger.factory.LogMessagePrinterFactory;
 import com.logger.printer.LogMessagePrinter;
 
 import java.util.HashMap;
@@ -12,10 +14,12 @@ public class LoggerConfiger {
 
     private Map<LoggerLevel, List<LogMessagePrinter>> mapper = new HashMap<>();
     private LoggerLevel level;
+    private LogMessagePrinterFactory printerFactory;
 
-    public void mapLevelToSink(LoggerLevel level, LogMessagePrinter logMessagePrinter) {
+    public void mapLevelToSink(LoggerLevel level, PrinterType printerType) {
+        LogMessagePrinter printer = printerFactory.get(printerType);
         final List<LogMessagePrinter> logMessagePrinters = mapper.getOrDefault(level, new LinkedList<>());
-        logMessagePrinters.add(logMessagePrinter);
+        logMessagePrinters.add(printer);
         mapper.put(level, logMessagePrinters);
     }
 

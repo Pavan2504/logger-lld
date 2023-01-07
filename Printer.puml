@@ -1,0 +1,183 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+LoggerManager -left--* LoggerConfiger
+
+ILogger --right--|> Logger
+Logger -down--* LoggerMessageContext
+LoggerMessageContext -- LogMessageHandler
+
+
+interface ILogger {
+    + void info(String message);
+    + void error(String message);
+    + void warn(String message);
+}
+
+class Logger {
+    - LoggerMessageContext loggerMessageContext;
+    + void error(String message);
+    + void info(String message);
+    + void warn(String message) ;
+}
+
+class LoggerMessageContext {
+    - LogMessageHandlerFactory messageHandlerFactory;
+    + void logMessage(LoggerMessage message);
+}
+
+package com.logger.handler {
+
+   LogMessageHandler -down-|> ErrorLogMessageHandler
+   LogMessageHandler -down-|> InfoLogMessageHandler
+   LogMessageHandler -down-|> WarnLogMessageHandler
+
+   interface LogMessageHandler{
+     + void handle(LoggerMessage message);
+     + LoggerLevel getLevel();
+   }
+
+
+class ErrorLogMessageHandler{
+   - LoggerMessagePublisher publisher;
+   + void printLogMessage(LoggerMessage message);
+   + PrinterType getPrinterType();
+}
+class InfoLogMessageHandler{
+   - LoggerMessagePublisher publisher;
+   + void printLogMessage(LoggerMessage message);
+   + PrinterType getPrinterType();
+}
+class WarnLogMessageHandler{
+    - LoggerMessagePublisher publisher;
+    + void printLogMessage(LoggerMessage message);
+    + PrinterType getPrinterType();
+}
+
+}
+
+package com.logger.publisher{
+  interface Publisher
+  class LoggerMessagePublisher
+
+  InfoLogMessageHandler --* Publisher
+  WarnLogMessageHandler --* Publisher
+  ErrorLogMessageHandler --* Publisher
+  Publisher -|> LoggerMessagePublisher
+  LoggerManager --left--* Publisher
+}
+interface Publisher<A, B, C> {
+    + void subscribe(A loggerLevel, B subscriber);
+    + void publish(C loggerMessage);
+}
+
+class LoggerMessagePublisher{
+  - Map<LoggerLevel, List<Subscriber>> subscribers;
+  + void subscribe(LoggerLevel level, Subscriber printer);
+  + void publish(LoggerMessage message);
+}
+
+package com.logger.subscriber{
+  interface Subscriber
+  class LoggerMessageSubscriber
+
+  Publisher --* Subscriber
+  Subscriber -|> LoggerMessageSubscriber
+}
+interface Subscriber<T> {
+    + void subscribe(T message);
+}
+
+class LoggerMessageSubscriber {
+   - LogMessagePrinter logMessagePrinter;
+   + LoggerMessageSubscriber(LogMessagePrinter logMessagePrinter) ;
+   + void subscribe(LoggerMessage message);
+}
+
+package com.logger.printer{
+  interface LogMessagePrinter
+  class ConsoleLogMessagePrinter
+  class DBLogMessagePrinter
+  class FileLogMessagePrinter
+
+  LoggerMessageSubscriber --down--* LogMessagePrinter
+  LogMessagePrinter -left-|> FileLogMessagePrinter
+  LogMessagePrinter -down--|> DBLogMessagePrinter
+  LogMessagePrinter -right--|> ConsoleLogMessagePrinter
+}
+
+interface LogMessagePrinter{
+  + void printLogMessage(LoggerMessage message);
+  + PrinterType getPrinterType();
+}
+
+class ConsoleLogMessagePrinter{
+  + void printLogMessage(LoggerMessage message);
+  + PrinterType getPrinterType();
+}
+
+class DBLogMessagePrinter{
+  + void printLogMessage(LoggerMessage message);
+  + PrinterType getPrinterType();
+}
+
+class FileLogMessagePrinter{
+  + void printLogMessage(LoggerMessage message);
+  + PrinterType getPrinterType();
+}
+
+class LoggerManager{
+    - LoggerConfiger loggerConfiger;
+    - LoggerMessagePublisher publisher;
+    + void manage();
+}
+
+class LoggerConfiger {
+    - Map<LoggerLevel, List<LogMessagePrinter>> mapper;
+    - LoggerLevel level;
+
+    + void mapLevelToSink(LoggerLevel level, LogMessagePrinter logMessagePrinter);
+    + void setLevel(LoggerLevel level) ;
+    + LoggerLevel getLevel() ;
+    + Map<LoggerLevel, List<LogMessagePrinter>> getMapper();
+}
+
+package com.logger.factory {
+  interface Factory
+  class LogMessageHandlerFactory
+  class LogMessagePrinterFactory
+
+  Factory -up--|> LogMessageHandlerFactory
+  Factory -up--|> LogMessagePrinterFactory
+  LoggerMessageContext --right--* Factory : get LogMessageHandlerFactory
+  LoggerConfiger --up--* Factory : get LogMessagePrinterFactory
+
+}
+
+interface Factory<U, V> {
+    U get(V type);
+}
+class LogMessageHandlerFactory{
+    - Map<LoggerLevel, LogMessageHandler> handlerMapper;
+    + LogMessageHandlerFactory(final List<LogMessageHandler> printers);
+    + LogMessageHandler get(LoggerLevel level) ;
+}
+
+ class LogMessagePrinterFactory{
+    - Map<PrinterType, LogMessagePrinter> printersMapper;
+    + LogMessagePrinterFactory(final List<LogMessagePrinter> printers);
+    + LogMessagePrinter get(PrinterType printerType);
+}
+
+enum LoggerLevel {
+    INFO,
+    ERROR,
+    WARN;
+}
+enum PrinterType {
+    DB,
+     FILE,
+     CONSOLE;
+}
+
+@enduml
